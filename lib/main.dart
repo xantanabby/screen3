@@ -261,6 +261,7 @@ class SignUpScreen2 extends StatelessWidget {
 }
 
 //screen3
+
 class SignUpScreen3 extends StatefulWidget {
   @override
   _SignUpScreen3State createState() => _SignUpScreen3State();
@@ -274,37 +275,61 @@ class _SignUpScreen3State extends State<SignUpScreen3> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
+  /// Hàm kiểm tra điều kiện và xác thực mật khẩu
   void _validatePasswords() {
-    if (_newPasswordController.text.isEmpty ||
-        _confirmPasswordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Both fields are required."),
-          backgroundColor: Colors.orange,
-        ),
+    String password = _newPasswordController.text;
+    String confirmPassword = _confirmPasswordController.text;
+
+    // Biểu thức chính quy kiểm tra yêu cầu mật khẩu
+    RegExp passwordRegex = RegExp(
+        r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$');
+
+    if (password.isEmpty || confirmPassword.isEmpty) {
+      _showSnackBar(
+        "Both fields are required.",
+        const Color.fromARGB(255, 255, 100, 79),
       );
       return;
     }
 
-    if (_newPasswordController.text != _confirmPasswordController.text) {
+    if (!passwordRegex.hasMatch(password)) {
+      _newPasswordController.clear();
+      _showSnackBar(
+        "Password must be at least 6 characters long, include a number, an uppercase letter, a lowercase letter, and a special character.",
+        Colors.orange,
+      );
+      return;
+    }
+
+    if (password != confirmPassword) {
       _newPasswordController.clear();
       _confirmPasswordController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Passwords do not match. Please try again."),
-          backgroundColor: Colors.red,
-        ),
+      _showSnackBar(
+        "Passwords do not match. Please try again.",
+        Colors.red,
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Password updated successfully!"),
-          backgroundColor: Colors.green,
-        ),
+      _showSnackBar(
+        "Password updated successfully!",
+        Colors.green,
       );
-
-      // Thêm logic lưu mật khẩu tại đây nếu cần
     }
+  }
+
+  /// Hàm hiển thị SnackBar
+  void _showSnackBar(String message, Color backgroundColor) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.only(
+          bottom: MediaQuery.of(context).size.height / 10,
+          left: 20,
+          right: 20,
+        ),
+        backgroundColor: backgroundColor,
+      ),
+    );
   }
 
   @override
@@ -335,7 +360,7 @@ class _SignUpScreen3State extends State<SignUpScreen3> {
                   ),
                   SizedBox(width: 8),
                   Icon(
-                    Icons.lock_open_sharp,
+                    Icons.lock,
                     color: const Color.fromARGB(255, 242, 235, 141),
                     size: 38,
                   ),
@@ -415,18 +440,13 @@ class _SignUpScreen3State extends State<SignUpScreen3> {
                     padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                     backgroundColor: const Color.fromARGB(255, 110, 55, 250),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Save New Password",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    "Save New Password",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
