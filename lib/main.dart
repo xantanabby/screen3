@@ -275,6 +275,10 @@ class _SignUpScreen3State extends State<SignUpScreen3> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
+  // FocusNode để quản lý focus
+  final FocusNode focusNodeNewPassword = FocusNode();
+  final FocusNode focusNodeConfirmPassword = FocusNode();
+
   /// Hàm kiểm tra điều kiện và xác thực mật khẩu
   void _validatePasswords() {
     String password = _newPasswordController.text;
@@ -284,7 +288,10 @@ class _SignUpScreen3State extends State<SignUpScreen3> {
     RegExp passwordRegex = RegExp(
         r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$');
 
+    // Kiểm tra nếu một trong hai trường để trống
     if (password.isEmpty || confirmPassword.isEmpty) {
+      _clearBothFields(); // Xóa cả hai trường nhập liệu
+      focusNodeNewPassword.requestFocus(); // Focus về ô New Password
       _showSnackBar(
         "Both fields are required.",
         const Color.fromARGB(255, 255, 100, 79),
@@ -292,8 +299,21 @@ class _SignUpScreen3State extends State<SignUpScreen3> {
       return;
     }
 
+    // Kiểm tra mật khẩu chứa dấu cách
+    if (password.contains(" ") || confirmPassword.contains(" ")) {
+      _clearBothFields(); // Xóa cả hai trường nhập liệu
+      focusNodeNewPassword.requestFocus(); // Focus về ô New Password
+      _showSnackBar(
+        "Password cannot contain spaces.",
+        Colors.red,
+      );
+      return;
+    }
+
+    // Kiểm tra điều kiện mật khẩu theo regex
     if (!passwordRegex.hasMatch(password)) {
-      _newPasswordController.clear();
+      _clearBothFields(); // Xóa cả hai trường nhập liệu
+      focusNodeNewPassword.requestFocus(); // Focus về ô New Password
       _showSnackBar(
         "Password must be at least 6 characters long, include a number, an uppercase letter, a lowercase letter, and a special character.",
         Colors.orange,
@@ -301,19 +321,28 @@ class _SignUpScreen3State extends State<SignUpScreen3> {
       return;
     }
 
+    // Kiểm tra mật khẩu khớp nhau
     if (password != confirmPassword) {
-      _newPasswordController.clear();
-      _confirmPasswordController.clear();
+      _clearBothFields(); // Xóa cả hai trường nhập liệu
+      focusNodeNewPassword.requestFocus(); // Focus về ô New Password
       _showSnackBar(
         "Passwords do not match. Please try again.",
         Colors.red,
       );
-    } else {
-      _showSnackBar(
-        "Password updated successfully!",
-        Colors.green,
-      );
+      return;
     }
+
+    // Nếu mật khẩu hợp lệ
+    _showSnackBar(
+      "Password updated successfully!",
+      Colors.green,
+    );
+  }
+
+  /// Hàm xóa cả hai trường nhập liệu
+  void _clearBothFields() {
+    _newPasswordController.clear();
+    _confirmPasswordController.clear();
   }
 
   /// Hàm hiển thị SnackBar
@@ -369,11 +398,12 @@ class _SignUpScreen3State extends State<SignUpScreen3> {
               SizedBox(height: 10),
               Text(
                 "Set a new password for your account. Make sure it's secure and easy for you to remember.",
-                style: TextStyle(fontSize: 20, color: Colors.grey),
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               SizedBox(height: 20),
               TextField(
                 controller: _newPasswordController,
+                focusNode: focusNodeNewPassword, // Gắn focus node
                 obscureText: !_isNewPassWordVisible,
                 style: TextStyle(
                   fontSize: 24,
@@ -404,6 +434,7 @@ class _SignUpScreen3State extends State<SignUpScreen3> {
               SizedBox(height: 20),
               TextField(
                 controller: _confirmPasswordController,
+                focusNode: focusNodeConfirmPassword, // Gắn focus node
                 obscureText: !_isConfirmPasswordVisible,
                 style: TextStyle(
                   fontSize: 24,
